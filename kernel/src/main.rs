@@ -5,14 +5,18 @@ extern crate alloc;
 
 mod acpi;
 mod apic;
+mod blk;
 mod cap;
 mod console;
 mod cpu;
+mod drm;
 mod gdt;
 mod idt;
+mod iommu;
 mod ipc;
 mod limine;
 mod mm;
+mod nvme;
 mod pci;
 mod sched;
 mod serial;
@@ -21,6 +25,7 @@ mod syscall;
 mod usermode;
 mod vfs;
 mod vmm;
+mod xhci;
 
 use core::arch::asm;
 use core::panic::PanicInfo;
@@ -235,6 +240,44 @@ pub extern "C" fn _start() -> ! {
     let pci_devs = pci::enumerate(&mcfg_allocs);
     serial_println!("PCIe: enumerated {} devices", pci_devs.len());
     fb_println!("PCIe: {} devices enumerated", pci_devs.len());
+
+    // IOMMU & Security Policy
+    let iommu_kind = iommu::IommuManager::init(cpu_info.vendor);
+    let wx_ok = !iommu::enforce_wx(vmm::PageFlags::PRESENT.union(vmm::PageFlags::WRITABLE));
+    serial_println!("IOMMU: {:?}, W^X enforced={}", iommu_kind, wx_ok);
+    fb_println!("IOMMU: {:?}, W^X={}", iommu_kind, wx_ok);
+
+    // Probe NVMe, VirtIO-Blk, xHCI USB 3.x, and DRM GPUs from PCIe bus
+    let mut nvme_count = 0usize;
+    let mut xhci_count = 0usize;
+    for dev in &pci_devs {
+        match dev.class() {
+            pci::PciClass::Nvme => {
+                if nvme::NvmeController::probe(dev).is_some() {
+                    nvme_count += 1;
+                }
+            }
+            pci::PciClass::XhciUsb => {
+                if xhci::XhciController::probe(dev).is_some() {
+                    xhci_count += 1;
+                }
+            }
+            _ => {}
+        }
+    }
+    let gpus = drm::probe_gpus(&pci_devs);
+    serial_println!(
+        "Drivers probed: nvme={}, xhci={}, drm_gpus={}",
+        nvme_count,
+        xhci_count,
+        gpus.len()
+    );
+    fb_println!(
+        "Drivers: {} NVMe, {} xHCI, {} GPU(s)",
+        nvme_count,
+        xhci_count,
+        gpus.len()
+    );
 
     // SMP multi-core bootstrap
     if let Some(smp_resp) = SMP_REQUEST.response() {
