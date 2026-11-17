@@ -178,3 +178,54 @@ pub struct KernelAddressResponse {
     pub physical_base: u64,
     pub virtual_base: u64,
 }
+
+pub const RSDP_REQUEST_ID: [u64; 4] = [
+    0xc7b1dd30df4c8b88,
+    0x0a82e883a194f07b,
+    0xc5ef91481d5b4c41,
+    0x95a67b819a1b857e,
+];
+
+#[repr(C)]
+pub struct RsdpResponse {
+    pub revision: u64,
+    pub address: *const u8,
+}
+
+unsafe impl Sync for RsdpResponse {}
+
+pub const SMP_REQUEST_ID: [u64; 4] = [
+    0xc7b1dd30df4c8b88,
+    0x0a82e883a194f07b,
+    0x95a67b819a1b857e,
+    0xa0b61b723b6a73e0,
+];
+
+#[repr(C)]
+pub struct SmpInfo {
+    pub processor_id: u32,
+    pub lapic_id: u32,
+    pub reserved: u64,
+    pub goto_address: core::sync::atomic::AtomicU64,
+    pub extra_argument: u64,
+}
+
+#[repr(C)]
+pub struct SmpResponse {
+    pub revision: u64,
+    pub flags: u32,
+    pub bsp_lapic_id: u32,
+    pub cpu_count: u64,
+    pub cpus: *const *const SmpInfo,
+}
+
+impl SmpResponse {
+    pub fn cpus(&self) -> &[&SmpInfo] {
+        if self.cpus.is_null() || self.cpu_count == 0 {
+            return &[];
+        }
+        unsafe {
+            core::slice::from_raw_parts(self.cpus as *const &SmpInfo, self.cpu_count as usize)
+        }
+    }
+}

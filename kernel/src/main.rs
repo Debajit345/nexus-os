@@ -3,17 +3,22 @@
 
 extern crate alloc;
 
+mod acpi;
 mod apic;
 mod cap;
 mod console;
+mod cpu;
 mod gdt;
 mod idt;
 mod ipc;
 mod limine;
 mod mm;
+mod pci;
 mod sched;
 mod serial;
+mod smp;
 mod syscall;
+mod usermode;
 mod vfs;
 mod vmm;
 
@@ -25,8 +30,8 @@ use nexus_abi::{AbiError, ObjectType, Personality, Rights, SyscallNumber};
 use crate::cap::CapTable;
 use crate::limine::{
     BaseRevision, FramebufferResponse, HhdmResponse, KernelAddressResponse, MemmapResponse,
-    Request, FRAMEBUFFER_REQUEST_ID, HHDM_REQUEST_ID, KERNEL_ADDRESS_REQUEST_ID, MEMMAP_REQUEST_ID,
-    MEMMAP_USABLE,
+    Request, RsdpResponse, SmpResponse, FRAMEBUFFER_REQUEST_ID, HHDM_REQUEST_ID,
+    KERNEL_ADDRESS_REQUEST_ID, MEMMAP_REQUEST_ID, MEMMAP_USABLE, RSDP_REQUEST_ID, SMP_REQUEST_ID,
 };
 
 #[used]
@@ -49,6 +54,14 @@ static MEMMAP_REQUEST: Request<MemmapResponse> = Request::new(MEMMAP_REQUEST_ID,
 #[link_section = ".requests"]
 static KERNEL_ADDRESS_REQUEST: Request<KernelAddressResponse> =
     Request::new(KERNEL_ADDRESS_REQUEST_ID, 0);
+
+#[used]
+#[link_section = ".requests"]
+static RSDP_REQUEST: Request<RsdpResponse> = Request::new(RSDP_REQUEST_ID, 0);
+
+#[used]
+#[link_section = ".requests"]
+static SMP_REQUEST: Request<SmpResponse> = Request::new(SMP_REQUEST_ID, 0);
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
@@ -76,8 +89,23 @@ pub extern "C" fn _start() -> ! {
 
     gdt::init();
     idt::init();
-    serial_println!("GDT, TSS, and IDT initialized.");
-    fb_println!("GDT, TSS, and IDT initialized.");
+    let cpu_info = cpu::detect_and_enable();
+    cpu::init_per_cpu_gs(0);
+    usermode::init_syscall_msrs();
+    serial_println!(
+        "CPU: {:?} ({}) core={:?} avx2={} avx512={} smep={} smap={} x2apic={}",
+        cpu_info.vendor,
+        cpu_info.brand_str(),
+        cpu_info.core_type,
+        cpu_info.features.avx2,
+        cpu_info.features.avx512f,
+        cpu_info.features.smep,
+        cpu_info.features.smap,
+        cpu_info.features.x2apic
+    );
+    fb_println!("CPU: {:?} ({:?})", cpu_info.vendor, cpu_info.core_type);
+    serial_println!("GDT, TSS, IDT, and Ring 3 syscall/sysret MSRs initialized.");
+    fb_println!("GDT, TSS, IDT, and syscall MSRs ready.");
 
     let hhdm_offset = if let Some(hhdm) = HHDM_REQUEST.response() {
         serial_println!("HHDM offset: {:#x}", hhdm.offset);
@@ -180,6 +208,45 @@ pub extern "C" fn _start() -> ! {
     apic::init_pic_pit_keyboard();
     apic::init_pit(100);
     serial_println!("PIC/PIT (100 Hz) and PS/2 keyboard IRQ initialized.");
+
+    // ACPI (MADT/MCFG) & PCIe enumeration
+    let mcfg_allocs = if let Some(rsdp) = RSDP_REQUEST.response() {
+        if let Some(acpi_info) = acpi::init(rsdp.address) {
+            serial_println!(
+                "ACPI: lapic={:#x}, local_apics={}, io_apics={}, mcfg_regions={}",
+                acpi_info.lapic_addr,
+                acpi_info.local_apics.len(),
+                acpi_info.io_apics.len(),
+                acpi_info.mcfg_allocations.len()
+            );
+            fb_println!(
+                "ACPI: {} LAPICs, {} MCFG regions",
+                acpi_info.local_apics.len(),
+                acpi_info.mcfg_allocations.len()
+            );
+            acpi_info.mcfg_allocations
+        } else {
+            alloc::vec::Vec::new()
+        }
+    } else {
+        alloc::vec::Vec::new()
+    };
+
+    let pci_devs = pci::enumerate(&mcfg_allocs);
+    serial_println!("PCIe: enumerated {} devices", pci_devs.len());
+    fb_println!("PCIe: {} devices enumerated", pci_devs.len());
+
+    // SMP multi-core bootstrap
+    if let Some(smp_resp) = SMP_REQUEST.response() {
+        let online = smp::init(smp_resp);
+        serial_println!(
+            "SMP: {}/{} CPUs online (BSP LAPIC={})",
+            online,
+            smp_resp.cpu_count,
+            smp::bsp_lapic_id()
+        );
+        fb_println!("SMP: {}/{} CPUs online", online, smp_resp.cpu_count);
+    }
 
     // Unified syscall router self-test across personalities
     let msg = b"hello from Native DebugLog";
