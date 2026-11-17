@@ -38,6 +38,9 @@ jobs:
       - name: Check formatting
         run: cargo fmt --all -- --check
 
+      - name: Run host crate clippy
+        run: cargo clippy --workspace --exclude nexus-kernel --all-targets -- -D warnings
+
       - name: Run host crate tests
         run: cargo test --workspace --exclude nexus-kernel
 
@@ -51,6 +54,7 @@ jobs:
       - name: Install Rust toolchain with x86_64-unknown-none
         uses: dtolnay/rust-toolchain@stable
         with:
+          components: clippy
           targets: x86_64-unknown-none
 
       - name: Cache Cargo dependencies
@@ -68,3 +72,6 @@ jobs:
 
       - name: Check kernel target
         run: cargo check -p nexus-kernel --target x86_64-unknown-none
+
+      - name: Run kernel clippy
+        run: cargo clippy -p nexus-kernel --target x86_64-unknown-none -- -D warnings

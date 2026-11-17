@@ -186,7 +186,7 @@ impl FrameAllocator {
 
     #[allow(dead_code)]
     pub fn dealloc_frame(&mut self, phys_addr: u64) {
-        if !self.initialized || phys_addr == 0 || (phys_addr % PAGE_SIZE as u64) != 0 {
+        if !self.initialized || phys_addr == 0 || !phys_addr.is_multiple_of(PAGE_SIZE as u64) {
             return;
         }
         if self.free_stack_len < FREE_STACK_CAP {

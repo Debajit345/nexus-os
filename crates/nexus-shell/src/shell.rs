@@ -8,25 +8,13 @@ use crate::parser::{parse_line, Connector, RedirectOut, SimpleCommand};
 use crate::sys::SystemInfo;
 
 /// Result of evaluating a shell command line.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct ShellOutput {
     pub stdout: String,
     pub stderr: String,
     pub exit_code: i32,
     pub should_exit: bool,
     pub clear_screen: bool,
-}
-
-impl Default for ShellOutput {
-    fn default() -> Self {
-        Self {
-            stdout: String::new(),
-            stderr: String::new(),
-            exit_code: 0,
-            should_exit: false,
-            clear_screen: false,
-        }
-    }
 }
 
 /// Clean-room POSIX-compatible shell interpreter.

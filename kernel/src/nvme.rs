@@ -226,11 +226,13 @@ impl NvmeController {
 
         let mut state = self.state.lock();
         // Create I/O Completion Queue (qid = 1)
-        let mut cq_cmd = NvmeSqEntry::default();
-        cq_cmd.cdw0 = ADMIN_CREATE_IO_CQ as u32;
-        cq_cmd.prp1 = io_qp.cq_phys;
-        cq_cmd.cdw10 = (((IO_QUEUE_DEPTH as u32) - 1) << 16) | 1;
-        cq_cmd.cdw11 = 1; // Physically contiguous (PC = 1)
+        let cq_cmd = NvmeSqEntry {
+            cdw0: ADMIN_CREATE_IO_CQ as u32,
+            prp1: io_qp.cq_phys,
+            cdw10: (((IO_QUEUE_DEPTH as u32) - 1) << 16) | 1,
+            cdw11: 1, // Physically contiguous (PC = 1)
+            ..Default::default()
+        };
 
         if submit_and_poll(self.mmio_base, self.dstrd, 0, &mut state.admin, cq_cmd).is_err() {
             dealloc_frame(io_qp.sq_phys);
@@ -239,11 +241,13 @@ impl NvmeController {
         }
 
         // Create I/O Submission Queue (qid = 1, cqid = 1)
-        let mut sq_cmd = NvmeSqEntry::default();
-        sq_cmd.cdw0 = ADMIN_CREATE_IO_SQ as u32;
-        sq_cmd.prp1 = io_qp.sq_phys;
-        sq_cmd.cdw10 = (((IO_QUEUE_DEPTH as u32) - 1) << 16) | 1;
-        sq_cmd.cdw11 = (1 << 16) | 1; // CQID = 1, PC = 1
+        let sq_cmd = NvmeSqEntry {
+            cdw0: ADMIN_CREATE_IO_SQ as u32,
+            prp1: io_qp.sq_phys,
+            cdw10: (((IO_QUEUE_DEPTH as u32) - 1) << 16) | 1,
+            cdw11: (1 << 16) | 1, // CQID = 1, PC = 1
+            ..Default::default()
+        };
 
         if submit_and_poll(self.mmio_base, self.dstrd, 0, &mut state.admin, sq_cmd).is_err() {
             dealloc_frame(io_qp.sq_phys);
@@ -255,11 +259,13 @@ impl NvmeController {
         if let Some(id_phys) = alloc_frame() {
             let id_virt = id_phys.wrapping_add(hhdm);
             unsafe { write_bytes(id_virt as *mut u8, 0, PAGE_SIZE) };
-            let mut id_cmd = NvmeSqEntry::default();
-            id_cmd.cdw0 = ADMIN_IDENTIFY as u32;
-            id_cmd.nsid = self.nsid;
-            id_cmd.prp1 = id_phys;
-            id_cmd.cdw10 = 0; // CNS = 0 (Identify Namespace)
+            let id_cmd = NvmeSqEntry {
+                cdw0: ADMIN_IDENTIFY as u32,
+                nsid: self.nsid,
+                prp1: id_phys,
+                cdw10: 0, // CNS = 0 (Identify Namespace)
+                ..Default::default()
+            };
 
             if submit_and_poll(self.mmio_base, self.dstrd, 0, &mut state.admin, id_cmd).is_ok() {
                 let nsze = unsafe { read_volatile(id_virt as *const u64) };
@@ -302,7 +308,7 @@ impl BlockDevice for NvmeController {
     }
 
     fn read_blocks(&self, lba: u64, buf: &mut [u8]) -> Result<(), &'static str> {
-        if buf.is_empty() || (buf.len() % self.block_size) != 0 {
+        if buf.is_empty() || !buf.len().is_multiple_of(self.block_size) {
             return Err("nvme: buffer must be a non-empty multiple of block_size");
         }
         let blocks = buf.len() / self.block_size;
@@ -329,13 +335,15 @@ impl BlockDevice for NvmeController {
             let chunk = remaining.min(max_per_page);
             let byte_len = chunk * self.block_size;
 
-            let mut cmd = NvmeSqEntry::default();
-            cmd.cdw0 = NVM_CMD_READ as u32;
-            cmd.nsid = self.nsid;
-            cmd.prp1 = dma_phys;
-            cmd.cdw10 = cur_lba as u32;
-            cmd.cdw11 = (cur_lba >> 32) as u32;
-            cmd.cdw12 = (chunk as u32) - 1;
+            let cmd = NvmeSqEntry {
+                cdw0: NVM_CMD_READ as u32,
+                nsid: self.nsid,
+                prp1: dma_phys,
+                cdw10: cur_lba as u32,
+                cdw11: (cur_lba >> 32) as u32,
+                cdw12: (chunk as u32) - 1,
+                ..Default::default()
+            };
 
             if let Err(e) = submit_and_poll(self.mmio_base, self.dstrd, 1, io, cmd) {
                 dealloc_frame(dma_phys);
@@ -360,7 +368,7 @@ impl BlockDevice for NvmeController {
     }
 
     fn write_blocks(&self, lba: u64, buf: &[u8]) -> Result<(), &'static str> {
-        if buf.is_empty() || (buf.len() % self.block_size) != 0 {
+        if buf.is_empty() || !buf.len().is_multiple_of(self.block_size) {
             return Err("nvme: buffer must be a non-empty multiple of block_size");
         }
         let blocks = buf.len() / self.block_size;
@@ -395,13 +403,15 @@ impl BlockDevice for NvmeController {
                 );
             }
 
-            let mut cmd = NvmeSqEntry::default();
-            cmd.cdw0 = NVM_CMD_WRITE as u32;
-            cmd.nsid = self.nsid;
-            cmd.prp1 = dma_phys;
-            cmd.cdw10 = cur_lba as u32;
-            cmd.cdw11 = (cur_lba >> 32) as u32;
-            cmd.cdw12 = (chunk as u32) - 1;
+            let cmd = NvmeSqEntry {
+                cdw0: NVM_CMD_WRITE as u32,
+                nsid: self.nsid,
+                prp1: dma_phys,
+                cdw10: cur_lba as u32,
+                cdw11: (cur_lba >> 32) as u32,
+                cdw12: (chunk as u32) - 1,
+                ..Default::default()
+            };
 
             if let Err(e) = submit_and_poll(self.mmio_base, self.dstrd, 1, io, cmd) {
                 dealloc_frame(dma_phys);

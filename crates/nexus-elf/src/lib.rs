@@ -419,7 +419,7 @@ impl<'a> Elf64<'a> {
                     return Err(ElfError::InvalidSegment);
                 }
             }
-            if ph.is_dynamic() && (ph.p_filesz as usize) % ELF64_DYN_SIZE != 0 {
+            if ph.is_dynamic() && !(ph.p_filesz as usize).is_multiple_of(ELF64_DYN_SIZE) {
                 return Err(ElfError::InvalidDynamic);
             }
         }

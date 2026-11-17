@@ -3,7 +3,8 @@
 Nexus OS is a clean-room, `x86_64` hybrid operating system written in Rust. Its
 design synthesizes proven architectural primitives from three OS families into a
 single, memory-safe kernel and userspace platform, paired with a GPU/Vulkan-first
-graphics roadmap.
+graphics roadmap. For a detailed breakdown of what Nexus OS keeps and eliminates
+from macOS, Linux, and Windows, see the [OS Feature Matrix](OS_FEATURE_MATRIX.md).
 
 ---
 
@@ -108,8 +109,25 @@ Nexus OS is architected around modern GPU pipelines:
 
 ---
 
-## 5. Host-Testable Workspace Design
+## 5. Implemented Kernel Modules & Workspace Crates
 
 To maximize development velocity and reliability, core subsystems live in
 platform-independent `crates/*` packages that compile and run unit tests on the
-host (`cargo test`), while `kernel/` binds them to bare-metal `x86_64` hardware.
+host (`cargo test`), while `kernel/` (`nexus-kernel`) binds them to bare-metal
+`x86_64` hardware.
+
+### `nexus-kernel` Modules (`kernel/src/`)
+- **Boot & CPU HAL**: `limine` (Base Revision 2), `gdt` (GDT/TSS), `idt` (exceptions/interrupts), `apic` (8259 PIC, Local APIC, PIT, PS/2), `cpu` (CPUID, AVX2/AVX-512, SMEP/SMAP, per-CPU GS), `smp` (AP bootstrap), `serial` (COM1 UART), `console` (linear framebuffer 8x8 text console).
+- **Memory & Isolation**: `mm` (physical frame allocator & kernel heap), `vmm` (4-level PML4 paging), `iommu` (Intel VT-d / AMD-Vi DMA remapping & sandbox policy).
+- **Capabilities, IPC & Scheduling**: `cap` (generation-checked capability table), `ipc` (Mach-style zero-copy ports + NT/io_uring async completion queues), `sched` (preemptive priority + round-robin scheduler), `syscall` (multi-personality dispatcher), `usermode` (Ring 3 `iretq` & `syscall`/`sysret`).
+- **Storage, Bus, USB, Net & Power**: `acpi` (RSDP/RSDT/XSDT/MADT/MCFG), `pci` (PCIe ECAM & legacy config space), `vfs` (VFS & RamFs), `blk` (block abstraction, GPT, VirtIO-Blk), `nvme` (NVMe PCIe controller), `xhci` (USB 3.x host controller), `net` (Ethernet/ARP/IPv4/UDP/TCP & VirtIO-Net), `power` (ACPI S-states, Intel HWP / AMD CPPC, profiles, reboot/shutdown).
+- **Graphics**: `drm` (clean-room GEM buffers, KMS modesetting, PCI GPU probing).
+
+### Workspace Crates (`crates/`)
+- `nexus-abi`: Shared `no_std` ABI types (`CapHandle`, `ObjectType`, `Rights`, `Personality`, `SyscallNumber`, `AbiError`).
+- `nexus-elf`: Clean-room `no_std` (`#![forbid(unsafe_code)]`) ELF64 parser and validator for Linux binaries.
+- `nexus-pe`: Clean-room `no_std` (`#![forbid(unsafe_code)]`) PE32+ parser and validator for Windows binaries.
+- `nexus-macho`: Clean-room `no_std` (`#![forbid(unsafe_code)]`) Mach-O 64-bit parser and validator for macOS binaries.
+- `nexus-compat`: Unified ELF64/PE32+/Mach-O inspection and multi-personality syscall translation.
+- `nexus-gfx`: 2D compositor primitives (`Surface`, `Color`, `Rect`), Aqua-inspired desktop chrome (`MenuBar`, `Dock`, `WindowFrame`), and GPU/DRM command submission traits.
+- `nexus-shell`: Clean-room `no_std` POSIX shell, command parser, in-memory VFS (`MemShellFs`), and system builtins (`uname`, `free`, `lscpu`, `lspci`).

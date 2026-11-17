@@ -259,10 +259,8 @@ pub extern "C" fn _start() -> ! {
                     nvme_count += 1;
                 }
             }
-            pci::PciClass::XhciUsb => {
-                if xhci::XhciController::probe(dev).is_some() {
-                    xhci_count += 1;
-                }
+            pci::PciClass::XhciUsb if xhci::XhciController::probe(dev).is_some() => {
+                xhci_count += 1;
             }
             _ => {}
         }

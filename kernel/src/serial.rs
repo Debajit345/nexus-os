@@ -24,7 +24,7 @@ pub fn init() {
     unsafe {
         outb(COM1 + 1, 0x00); // Disable interrupts
         outb(COM1 + 3, 0x80); // Enable DLAB
-        outb(COM1 + 0, 0x03); // 38400 baud (divisor 3)
+        outb(COM1, 0x03); // 38400 baud (divisor 3)
         outb(COM1 + 1, 0x00);
         outb(COM1 + 3, 0x03); // 8N1
         outb(COM1 + 2, 0xC7); // Enable FIFO, clear, 14-byte threshold

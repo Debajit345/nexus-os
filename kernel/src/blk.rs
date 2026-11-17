@@ -334,7 +334,7 @@ impl BlockDevice for VirtioBlkDevice {
     }
 
     fn read_blocks(&self, lba: u64, buf: &mut [u8]) -> Result<(), &'static str> {
-        if buf.is_empty() || (buf.len() % SECTOR_SIZE) != 0 {
+        if buf.is_empty() || !buf.len().is_multiple_of(SECTOR_SIZE) {
             return Err("virtio-blk: buffer must be a non-empty multiple of 512 bytes");
         }
         let sectors = (buf.len() / SECTOR_SIZE) as u64;
@@ -349,7 +349,7 @@ impl BlockDevice for VirtioBlkDevice {
     }
 
     fn write_blocks(&self, lba: u64, buf: &[u8]) -> Result<(), &'static str> {
-        if buf.is_empty() || (buf.len() % SECTOR_SIZE) != 0 {
+        if buf.is_empty() || !buf.len().is_multiple_of(SECTOR_SIZE) {
             return Err("virtio-blk: buffer must be a non-empty multiple of 512 bytes");
         }
         let sectors = (buf.len() / SECTOR_SIZE) as u64;

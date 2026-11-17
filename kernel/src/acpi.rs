@@ -241,11 +241,12 @@ pub fn init(rsdp_addr: *const u8) -> Option<AcpiInfo> {
     if v1.revision >= 2 {
         let v2 = unsafe { read_unaligned(rsdp_ptr as *const RsdpV2) };
         let len = v2.length as usize;
-        if len >= core::mem::size_of::<RsdpV2>() && validate_checksum(rsdp_ptr, len) {
-            if v2.xsdt_address != 0 {
-                use_xsdt = true;
-                xsdt_phys = v2.xsdt_address;
-            }
+        if len >= core::mem::size_of::<RsdpV2>()
+            && validate_checksum(rsdp_ptr, len)
+            && v2.xsdt_address != 0
+        {
+            use_xsdt = true;
+            xsdt_phys = v2.xsdt_address;
         }
     }
 

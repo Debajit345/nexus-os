@@ -188,7 +188,7 @@ impl Dock {
         let step = (self.icon_size + self.spacing) as i64;
         let first_cx = base_dock.x as i64 + self.padding as i64 + (self.icon_size as i64) / 2;
         let cx = first_cx + (index as i64) * step;
-        let dist = (cursor.x as i64 - cx).unsigned_abs() as u64;
+        let dist = (cursor.x as i64 - cx).unsigned_abs();
         let radius = self.magnification_radius as u64;
         if dist >= radius {
             return 1000;

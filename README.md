@@ -35,10 +35,19 @@ fragmented I/O or IPC models. Nexus OS explores what happens when you combine:
 
 ## Repository Layout
 
-- `kernel/`: Bare-metal `x86_64-unknown-none` kernel crate.
-- `crates/`: Host-testable core subsystems (object manager, VFS, IPC, async
-  I/O, scheduler, etc.).
-- `docs/`: Architecture specifications and clean-room legal guidelines.
+- `kernel/`: Bare-metal `x86_64-unknown-none` microkernel (`nexus-kernel`) with
+  modules for `cpu`, `acpi`, `pci`, `mm`, `vmm`, `cap`, `sched`, `ipc`, `vfs`,
+  `syscall`, `usermode`, `smp`, `blk`, `nvme`, `xhci`, `drm`, `iommu`, `net`,
+  `power`, `apic`, `gdt`, `idt`, `limine`, `serial`, and `console`.
+- `crates/`: Host-testable `no_std` core subsystems:
+  - `nexus-abi`: Shared capability handles, object types, personalities, and syscall ABI.
+  - `nexus-elf`: Bounds-checked ELF64 parser and validator (`#![forbid(unsafe_code)]`).
+  - `nexus-pe`: Bounds-checked PE32+ parser and validator (`#![forbid(unsafe_code)]`).
+  - `nexus-macho`: Bounds-checked Mach-O 64-bit parser and validator (`#![forbid(unsafe_code)]`).
+  - `nexus-compat`: Unified binary inspection and multi-personality syscall translation.
+  - `nexus-gfx`: 2D compositor primitives, Aqua-inspired desktop chrome, and GPU/DRM traits.
+  - `nexus-shell`: Clean-room POSIX shell, parser, in-memory VFS, and system builtins.
+- `docs/`: Architecture specifications, OS feature matrix, and clean-room legal guidelines.
 - `.github/`: CI workflows and issue templates.
 
 ---
@@ -69,7 +78,10 @@ cargo check -p nexus-kernel --target x86_64-unknown-none
 ## Documentation
 
 - [Architecture Overview](docs/ARCHITECTURE.md): Hybrid kernel design,
-  subsystems, and GPU/Vulkan-first roadmap.
+  implemented modules, workspace crates, and GPU/Vulkan-first roadmap.
+- [OS Feature Matrix](docs/OS_FEATURE_MATRIX.md): Core-to-desktop comparison of
+  macOS, Linux, and Windows (what is kept vs eliminated) and how each maps to
+  Nexus OS crates and kernel modules.
 - [Clean-Room Legal Policy](docs/LEGAL_CLEAN_ROOM.md): Mandatory rules for
   clean-room development.
 - [Contributing Guide](CONTRIBUTING.md): How to submit PRs, run tests, and

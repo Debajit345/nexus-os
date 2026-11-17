@@ -266,10 +266,7 @@ impl Scheduler {
             }
         }
 
-        let next_id = match best_idx {
-            Some(idx) => self.ready_queue.remove(idx)?,
-            None => return None,
-        };
+        let next_id = self.ready_queue.remove(best_idx?)?;
 
         if let Some(task) = self.find_task_mut(next_id) {
             task.state = TaskState::Running;

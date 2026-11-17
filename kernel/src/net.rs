@@ -65,7 +65,7 @@ impl Ipv4Addr {
         &self.0
     }
 
-    pub const fn to_be_u32(&self) -> u32 {
+    pub const fn to_be_u32(self) -> u32 {
         u32::from_be_bytes(self.0)
     }
 

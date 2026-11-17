@@ -160,7 +160,7 @@ pub fn alloc_gem_buffer(size: usize) -> Option<GemBuffer> {
         return None;
     }
 
-    let pages = (size + PAGE_SIZE - 1) / PAGE_SIZE;
+    let pages = size.div_ceil(PAGE_SIZE);
     let aligned_size = pages * PAGE_SIZE;
     let hhdm_offset = stats().hhdm_offset;
 
@@ -199,7 +199,7 @@ pub fn alloc_gem_buffer(size: usize) -> Option<GemBuffer> {
 
 /// Free a GEM buffer's backing physical frames (for contiguous allocations).
 pub fn free_gem_buffer(buf: GemBuffer) {
-    let pages = (buf.size + PAGE_SIZE - 1) / PAGE_SIZE;
+    let pages = buf.size.div_ceil(PAGE_SIZE);
     for i in 0..pages {
         dealloc_frame(buf.phys_addr + (i * PAGE_SIZE) as u64);
     }

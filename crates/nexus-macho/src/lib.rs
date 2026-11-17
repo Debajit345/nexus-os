@@ -257,7 +257,7 @@ impl<'a> MachO64<'a> {
             }
             let cmd = read_u32(cmds_slice, offset)?;
             let cmdsize = read_u32(cmds_slice, offset + 4)? as usize;
-            if cmdsize < LOAD_COMMAND_HEADER_SIZE || cmdsize % 8 != 0 {
+            if cmdsize < LOAD_COMMAND_HEADER_SIZE || !cmdsize.is_multiple_of(8) {
                 return Err(MachOError::InvalidLoadCommand);
             }
             let next_offset = offset
