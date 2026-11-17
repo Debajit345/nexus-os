@@ -36,10 +36,11 @@ fragmented I/O or IPC models. Nexus OS explores what happens when you combine:
 ## Repository Layout
 
 - `kernel/`: Bare-metal `x86_64-unknown-none` microkernel (`nexus-kernel`) with
-  modules for `cpu`, `acpi`, `pci`, `mm`, `vmm`, `cap`, `sched`, `ipc`, `vfs`,
-  `syscall`, `usermode`, `smp`, `blk`, `nvme`, `xhci`, `drm`, `iommu`, `net`,
-  `power`, `apic`, `gdt`, `idt`, `limine`, `serial`, and `console`.
-- `crates/`: Host-testable `no_std` core subsystems:
+  30 modules: `acpi`, `apic`, `audio`, `blk`, `cap`, `console`, `cpu`,
+  `desktop_boot`, `drm`, `exec`, `gdt`, `idt`, `iommu`, `ipc`, `ksh`, `limine`,
+  `mm`, `net`, `nvme`, `pci`, `power`, `sched`, `serial`, `smp`, `syscall`,
+  `time`, `usermode`, `vfs`, `vmm`, and `xhci`.
+- `crates/`: 12 host-testable `no_std` core subsystems:
   - `nexus-abi`: Shared capability handles, object types, personalities, and syscall ABI.
   - `nexus-elf`: Bounds-checked ELF64 parser and validator (`#![forbid(unsafe_code)]`).
   - `nexus-pe`: Bounds-checked PE32+ parser and validator (`#![forbid(unsafe_code)]`).
@@ -47,6 +48,11 @@ fragmented I/O or IPC models. Nexus OS explores what happens when you combine:
   - `nexus-compat`: Unified binary inspection and multi-personality syscall translation.
   - `nexus-gfx`: 2D compositor primitives, Aqua-inspired desktop chrome, and GPU/DRM traits.
   - `nexus-shell`: Clean-room POSIX shell, parser, in-memory VFS, and system builtins.
+  - `nexus-desktop`: macOS-inspired desktop compositor, window manager, themes, and integrated terminal.
+  - `nexus-init`: Declarative `/etc/nexus.conf` parser and dependency-aware service manager.
+  - `nexus-pkg`: Multi-OS package manifest, dependency resolver, and registry (native, ELF, PE, `.app`).
+  - `nexus-gpu-bridge`: Clean-room GPU API translation bridge (Direct3D 11/12, Metal, OpenGL, Vulkan).
+  - `nexus-fs`: Clean-room filesystem implementations (FAT32 and NexusFS).
 - `docs/`: Architecture specifications, OS feature matrix, and clean-room legal guidelines.
 - `.github/`: CI workflows and issue templates.
 
@@ -86,6 +92,7 @@ cargo check -p nexus-kernel --target x86_64-unknown-none
   clean-room development.
 - [Contributing Guide](CONTRIBUTING.md): How to submit PRs, run tests, and
   follow project standards.
+- [Changelog](CHANGELOG.md): Release milestones and implemented features for `v0.1.0`.
 - [Code of Conduct](CODE_OF_CONDUCT.md): Community expectations.
 
 ---

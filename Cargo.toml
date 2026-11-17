@@ -12,6 +12,7 @@ members = [
     "crates/nexus-init",
     "crates/nexus-pkg",
     "crates/nexus-gpu-bridge",
+    "crates/nexus-fs",
     "kernel",
 ]
 

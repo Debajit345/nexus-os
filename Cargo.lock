@@ -29,6 +29,10 @@ name = "nexus-elf"
 version = "0.1.0"
 
 [[package]]
+name = "nexus-fs"
+version = "0.1.0"
+
+[[package]]
 name = "nexus-gfx"
 version = "0.1.0"
 

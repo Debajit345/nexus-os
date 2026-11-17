@@ -117,10 +117,10 @@ host (`cargo test`), while `kernel/` (`nexus-kernel`) binds them to bare-metal
 `x86_64` hardware.
 
 ### `nexus-kernel` Modules (`kernel/src/`)
-- **Boot & CPU HAL**: `limine` (Base Revision 2), `gdt` (GDT/TSS), `idt` (exceptions/interrupts), `apic` (8259 PIC, Local APIC, PIT, PS/2), `cpu` (CPUID, AVX2/AVX-512, SMEP/SMAP, per-CPU GS), `smp` (AP bootstrap), `serial` (COM1 UART), `console` (linear framebuffer 8x8 text console).
+- **Boot & CPU HAL**: `limine` (Base Revision 2), `gdt` (GDT/TSS), `idt` (exceptions/interrupts), `apic` (8259 PIC, Local APIC, PIT, PS/2), `cpu` (CPUID, AVX2/AVX-512, SMEP/SMAP, per-CPU GS), `smp` (AP bootstrap), `time` (RTC/TSC timekeeping), `serial` (COM1 UART), `console` (linear framebuffer 8x8 text console).
 - **Memory & Isolation**: `mm` (physical frame allocator & kernel heap), `vmm` (4-level PML4 paging), `iommu` (Intel VT-d / AMD-Vi DMA remapping & sandbox policy).
-- **Capabilities, IPC & Scheduling**: `cap` (generation-checked capability table), `ipc` (Mach-style zero-copy ports + NT/io_uring async completion queues), `sched` (preemptive priority + round-robin scheduler), `syscall` (multi-personality dispatcher), `usermode` (Ring 3 `iretq` & `syscall`/`sysret`).
-- **Storage, Bus, USB, Net & Power**: `acpi` (RSDP/RSDT/XSDT/MADT/MCFG), `pci` (PCIe ECAM & legacy config space), `vfs` (VFS & RamFs), `blk` (block abstraction, GPT, VirtIO-Blk), `nvme` (NVMe PCIe controller), `xhci` (USB 3.x host controller), `net` (Ethernet/ARP/IPv4/UDP/TCP & VirtIO-Net), `power` (ACPI S-states, Intel HWP / AMD CPPC, profiles, reboot/shutdown).
+- **Capabilities, IPC, Execution & Scheduling**: `cap` (generation-checked capability table), `ipc` (Mach-style zero-copy ports + NT/io_uring async completion queues), `sched` (preemptive priority + round-robin scheduler), `syscall` (multi-personality dispatcher), `usermode` (Ring 3 `iretq` & `syscall`/`sysret`), `exec` (multi-OS ELF64/PE32+/Mach-O loader), `ksh` (kernel recovery shell), `desktop_boot` (early-boot `nexus-init` self-test & live `nexus-desktop` preview).
+- **Storage, Bus, USB, Audio, Net & Power**: `acpi` (RSDP/RSDT/XSDT/MADT/MCFG), `pci` (PCIe ECAM & legacy config space), `vfs` (VFS & RamFs), `blk` (block abstraction, GPT, VirtIO-Blk), `nvme` (NVMe PCIe controller), `xhci` (USB 3.x host controller), `audio` (Intel HDA audio controller), `net` (Ethernet/ARP/IPv4/UDP/TCP & VirtIO-Net), `power` (ACPI S-states, Intel HWP / AMD CPPC, profiles, reboot/shutdown).
 - **Graphics**: `drm` (clean-room GEM buffers, KMS modesetting, PCI GPU probing).
 
 ### Workspace Crates (`crates/`)
@@ -131,3 +131,8 @@ host (`cargo test`), while `kernel/` (`nexus-kernel`) binds them to bare-metal
 - `nexus-compat`: Unified ELF64/PE32+/Mach-O inspection and multi-personality syscall translation.
 - `nexus-gfx`: 2D compositor primitives (`Surface`, `Color`, `Rect`), Aqua-inspired desktop chrome (`MenuBar`, `Dock`, `WindowFrame`), and GPU/DRM command submission traits.
 - `nexus-shell`: Clean-room `no_std` POSIX shell, command parser, in-memory VFS (`MemShellFs`), and system builtins (`uname`, `free`, `lscpu`, `lspci`).
+- `nexus-desktop`: Clean-room `no_std` (`#![forbid(unsafe_code)]`) macOS-inspired desktop compositor, window manager, light/dark themes, and integrated terminal.
+- `nexus-init`: Clean-room `no_std` (`#![forbid(unsafe_code)]`) init system, declarative `/etc/nexus.conf` parser, and dependency-aware service manager.
+- `nexus-pkg`: Clean-room `no_std` (`#![forbid(unsafe_code)]`) multi-OS package manifest, dependency resolver, and registry (native, Linux ELF, Windows PE, macOS `.app`).
+- `nexus-gpu-bridge`: Clean-room `no_std` (`#![forbid(unsafe_code)]`) GPU API translation bridge (Direct3D 11/12, Metal, OpenGL, and Vulkan).
+- `nexus-fs`: Clean-room `no_std` filesystem implementations (FAT32 and NexusFS).
