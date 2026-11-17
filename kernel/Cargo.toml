@@ -8,3 +8,5 @@ description = "Nexus OS x86_64 capability microkernel"
 
 [dependencies]
 nexus-abi = { path = "../crates/nexus-abi" }
+nexus-compat = { path = "../crates/nexus-compat" }
+nexus-shell = { path = "../crates/nexus-shell" }

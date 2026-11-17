@@ -5,15 +5,18 @@ extern crate alloc;
 
 mod acpi;
 mod apic;
+mod audio;
 mod blk;
 mod cap;
 mod console;
 mod cpu;
 mod drm;
+mod exec;
 mod gdt;
 mod idt;
 mod iommu;
 mod ipc;
+mod ksh;
 mod limine;
 mod mm;
 mod net;
@@ -24,6 +27,7 @@ mod sched;
 mod serial;
 mod smp;
 mod syscall;
+mod time;
 mod usermode;
 mod vfs;
 mod vmm;
@@ -266,28 +270,36 @@ pub extern "C" fn _start() -> ! {
         }
     }
     let gpus = drm::probe_gpus(&pci_devs);
+    let audio_devs = audio::probe_audio(&pci_devs);
     let mut net_stack = net::NetStack::new();
     let nic_count = net_stack.probe_nics(&pci_devs);
     let power_info = power::init(cpu_info.vendor);
+    time::init();
+    let rtc = time::read_rtc();
     serial_println!(
-        "Drivers probed: nvme={}, xhci={}, drm_gpus={}, nics={}, hwp={}, cppc={}",
+        "Drivers probed: nvme={}, xhci={}, drm_gpus={}, audio={}, nics={}, hwp={}, cppc={}, rtc={:04}-{:02}-{:02}",
         nvme_count,
         xhci_count,
         gpus.len(),
+        audio_devs.len(),
         nic_count,
         power_info.hwp_supported,
-        power_info.amd_cppc
+        power_info.amd_cppc,
+        rtc.year,
+        rtc.month,
+        rtc.day
     );
     fb_println!(
-        "Drivers: {} NVMe, {} xHCI, {} GPU, {} NIC",
+        "Drivers: {} NVMe, {} xHCI, {} GPU, {} Audio, {} NIC",
         nvme_count,
         xhci_count,
         gpus.len(),
+        audio_devs.len(),
         nic_count
     );
 
     // SMP multi-core bootstrap
-    if let Some(smp_resp) = SMP_REQUEST.response() {
+    let online_cpus = if let Some(smp_resp) = SMP_REQUEST.response() {
         let online = smp::init(smp_resp);
         serial_println!(
             "SMP: {}/{} CPUs online (BSP LAPIC={})",
@@ -296,7 +308,24 @@ pub extern "C" fn _start() -> ! {
             smp::bsp_lapic_id()
         );
         fb_println!("SMP: {}/{} CPUs online", online, smp_resp.cpu_count);
-    }
+        online
+    } else {
+        1
+    };
+
+    // Built-in kernel recovery/diagnostic shell self-test
+    let mm_now = mm::stats();
+    let sys_info = nexus_shell::SystemInfo {
+        os_name: alloc::string::String::from("Nexus OS"),
+        version: alloc::string::String::from("0.1.0"),
+        arch: alloc::string::String::from("x86_64"),
+        cpu_vendor: alloc::format!("{:?}", cpu_info.vendor),
+        total_ram_mib: ((mm_now.total_frames * mm::PAGE_SIZE) / (1024 * 1024)) as u64,
+        free_ram_mib: ((mm_now.free_frames * mm::PAGE_SIZE) / (1024 * 1024)) as u64,
+        online_cpus: online_cpus as u32,
+        pci_count: pci_devs.len() as u32,
+    };
+    ksh::run_boot_diagnostics(&sys_info);
 
     // Unified syscall router self-test across personalities
     let msg = b"hello from Native DebugLog";

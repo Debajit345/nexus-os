@@ -29,6 +29,8 @@ name = "nexus-kernel"
 version = "0.1.0"
 dependencies = [
  "nexus-abi",
+ "nexus-compat",
+ "nexus-shell",
 ]
 
 [[package]]
