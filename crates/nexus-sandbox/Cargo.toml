@@ -1,0 +1,10 @@
+[package]
+name = "nexus-sandbox"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Clean-room capability sandbox and policy engine for Nexus OS"
+
+[dependencies]
+nexus-abi = { path = "../nexus-abi" }

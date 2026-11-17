@@ -14,6 +14,14 @@ members = [
     "crates/nexus-gpu-bridge",
     "crates/nexus-fs",
     "crates/nexus-libc",
+    "crates/nexus-win32",
+    "crates/nexus-darwin",
+    "crates/nexus-audio",
+    "crates/nexus-input",
+    "crates/nexus-net-stack",
+    "crates/nexus-sandbox",
+    "crates/nexus-vm",
+    "crates/nexus-apps",
     "kernel",
 ]
 

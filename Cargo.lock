@@ -7,6 +7,18 @@ name = "nexus-abi"
 version = "0.1.0"
 
 [[package]]
+name = "nexus-apps"
+version = "0.1.0"
+dependencies = [
+ "nexus-desktop",
+ "nexus-shell",
+]
+
+[[package]]
+name = "nexus-audio"
+version = "0.1.0"
+
+[[package]]
 name = "nexus-compat"
 version = "0.1.0"
 dependencies = [
@@ -14,6 +26,13 @@ dependencies = [
  "nexus-elf",
  "nexus-macho",
  "nexus-pe",
+]
+
+[[package]]
+name = "nexus-darwin"
+version = "0.1.0"
+dependencies = [
+ "nexus-abi",
 ]
 
 [[package]]
@@ -52,6 +71,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "nexus-input"
+version = "0.1.0"
+
+[[package]]
 name = "nexus-kernel"
 version = "0.1.0"
 dependencies = [
@@ -76,6 +99,10 @@ name = "nexus-macho"
 version = "0.1.0"
 
 [[package]]
+name = "nexus-net-stack"
+version = "0.1.0"
+
+[[package]]
 name = "nexus-pe"
 version = "0.1.0"
 
@@ -87,5 +114,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "nexus-sandbox"
+version = "0.1.0"
+dependencies = [
+ "nexus-abi",
+]
+
+[[package]]
 name = "nexus-shell"
 version = "0.1.0"
+
+[[package]]
+name = "nexus-vm"
+version = "0.1.0"
+dependencies = [
+ "nexus-abi",
+]
+
+[[package]]
+name = "nexus-win32"
+version = "0.1.0"
+dependencies = [
+ "nexus-abi",
+]

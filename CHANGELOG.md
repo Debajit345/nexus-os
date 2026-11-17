@@ -5,6 +5,23 @@ All notable changes to **Nexus OS** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-11-18
+
+Full-stack `v0.2.0` milestone covering Stages 11 through 20 across 21 workspace crates and `nexus-kernel`.
+
+### Added
+
+- **Stage 11 — Kernel FS Mount, Ring 3 Exec Smoke Test & POSIX Shim**: `kernel/src/fs_mount.rs`, `kernel/src/ring3_test.rs`, and `crates/nexus-libc`.
+- **Stage 12 — Windows NT/Win32 Runtime Shim**: `crates/nexus-win32` (`NtStatus`, `WinHandle`, `Win32Runtime`).
+- **Stage 13 — macOS Darwin/Mach Runtime Shim**: `crates/nexus-darwin` (`KernReturn`, `MachPort`, `DarwinRuntime`).
+- **Stage 14 — Audio DSP Mixer**: `crates/nexus-audio` (`AudioMixer`, `MixerChannel`, soft-clipping & stereo pan).
+- **Stage 15 — HID Input & Shortcut Router**: `crates/nexus-input` (`InputQueue`, `match_shortcut` for macOS/Linux/Windows).
+- **Stage 16 — User-Space Socket, DNS & DHCP Stack**: `crates/nexus-net-stack` (`SocketTable`, `DnsQuery`, `DhcpDiscover`).
+- **Stage 17 — Capability Sandbox Policy Engine**: `crates/nexus-sandbox` (`AppPolicy`, `SandboxEnforcer`).
+- **Stage 18 — Hypervisor & Container Isolation**: `crates/nexus-vm` (`IsolationManager`, `VmConfig`, `ContainerSpec`).
+- **Stage 19 — Built-in Core Apps**: `crates/nexus-apps` (`FinderApp`, `ActivityMonitorApp`, `SettingsApp`).
+- **Stage 20 — Full Workspace Integration & `v0.2.0` Release**: 21 workspace crates + `nexus-kernel`, 89/89 unit tests, 0-warning `clippy -D warnings`, and QEMU Boot CI.
+
 ## [0.1.0] - 2026-11-18
 
 Initial `v0.1.0` milestone release covering Phases 1 through 10 of the clean-room

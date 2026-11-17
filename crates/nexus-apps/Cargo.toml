@@ -1,0 +1,11 @@
+[package]
+name = "nexus-apps"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Built-in macOS-inspired core apps (Finder, Activity Monitor, Settings) for Nexus OS"
+
+[dependencies]
+nexus-desktop = { path = "../nexus-desktop" }
+nexus-shell = { path = "../nexus-shell" }

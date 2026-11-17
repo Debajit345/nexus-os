@@ -1,0 +1,11 @@
+[package]
+name = "nexus-audio"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["Nexus OS Contributors"]
+description = "Clean-room no_std DSP audio mixer crate for Nexus OS"
+
+[features]
+default = []
+std = []

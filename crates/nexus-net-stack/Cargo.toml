@@ -1,0 +1,7 @@
+[package]
+name = "nexus-net-stack"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Clean-room user-space socket, DNS, and DHCP network stack for Nexus OS"
