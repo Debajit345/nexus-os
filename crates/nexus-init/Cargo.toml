@@ -1,0 +1,15 @@
+[package]
+name = "nexus-init"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Clean-room init system, declarative /etc/nexus.conf parser, and service manager for Nexus OS"
+
+[features]
+default = []
+std = ["nexus-abi/std", "nexus-compat/std"]
+
+[dependencies]
+nexus-abi = { path = "../nexus-abi" }
+nexus-compat = { path = "../nexus-compat" }

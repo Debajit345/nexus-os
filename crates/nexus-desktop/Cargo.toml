@@ -1,0 +1,15 @@
+[package]
+name = "nexus-desktop"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Clean-room macOS-inspired desktop compositor, window manager, and integrated terminal for Nexus OS"
+
+[features]
+default = []
+std = ["nexus-gfx/std", "nexus-shell/std"]
+
+[dependencies]
+nexus-gfx = { path = "../nexus-gfx" }
+nexus-shell = { path = "../nexus-shell" }

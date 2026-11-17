@@ -17,12 +17,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "nexus-desktop"
+version = "0.1.0"
+dependencies = [
+ "nexus-gfx",
+ "nexus-shell",
+]
+
+[[package]]
 name = "nexus-elf"
 version = "0.1.0"
 
 [[package]]
 name = "nexus-gfx"
 version = "0.1.0"
+
+[[package]]
+name = "nexus-init"
+version = "0.1.0"
+dependencies = [
+ "nexus-abi",
+ "nexus-compat",
+]
 
 [[package]]
 name = "nexus-kernel"

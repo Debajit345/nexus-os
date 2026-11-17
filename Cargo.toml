@@ -8,6 +8,8 @@ members = [
     "crates/nexus-gfx",
     "crates/nexus-shell",
     "crates/nexus-compat",
+    "crates/nexus-desktop",
+    "crates/nexus-init",
     "kernel",
 ]
 
