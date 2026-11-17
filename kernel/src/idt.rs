@@ -84,6 +84,8 @@ extern "C" {
     fn isr_stub_8();
     fn isr_stub_13();
     fn isr_stub_14();
+    fn isr_stub_32();
+    fn isr_stub_33();
     fn isr_stub_default();
 }
 
@@ -111,6 +113,8 @@ ISR_NOERR 6
 ISR_ERR   8
 ISR_ERR   13
 ISR_ERR   14
+ISR_NOERR 32
+ISR_NOERR 33
 
 .global isr_stub_default
 isr_stub_default:
@@ -194,6 +198,16 @@ extern "C" fn isr_dispatch(frame: &InterruptFrame) {
             );
             halt_forever();
         }
+        32 => {
+            crate::apic::tick();
+            let _ = crate::sched::tick();
+            crate::apic::pic_eoi(0);
+        }
+        33 => {
+            let scancode = crate::apic::read_ps2_data();
+            crate::apic::push_scancode(scancode);
+            crate::apic::pic_eoi(1);
+        }
         vec => {
             serial_println!(
                 "[IDT] Exception vec={} err={:#x} RIP={:#x}",
@@ -229,6 +243,8 @@ pub fn init() {
         IDT[8].set_handler(isr_stub_8 as *const () as u64, DOUBLE_FAULT_IST_INDEX);
         IDT[13].set_handler(isr_stub_13 as *const () as u64, 0);
         IDT[14].set_handler(isr_stub_14 as *const () as u64, 0);
+        IDT[32].set_handler(isr_stub_32 as *const () as u64, 0);
+        IDT[33].set_handler(isr_stub_33 as *const () as u64, 0);
 
         let idtr = IdtDescriptor {
             limit: (size_of::<[IdtEntry; 256]>() - 1) as u16,

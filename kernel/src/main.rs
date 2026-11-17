@@ -3,15 +3,19 @@
 
 extern crate alloc;
 
+mod apic;
 mod cap;
 mod console;
 mod gdt;
 mod idt;
+mod ipc;
 mod limine;
 mod mm;
+mod sched;
 mod serial;
 mod syscall;
 mod vfs;
+mod vmm;
 
 use core::arch::asm;
 use core::panic::PanicInfo;
@@ -128,6 +132,54 @@ pub extern "C" fn _start() -> ! {
         serial_println!("VFS /etc/nexus.conf: {} bytes", conf.len());
         fb_println!("VFS /etc/nexus.conf: {} bytes", conf.len());
     }
+
+    // Initialize VMM, Scheduler, IPC, and PIC/PIT/Keyboard
+    let kernel_as = vmm::AddressSpace::new_from_current();
+    let k_phys = kernel_as.translate(kernel_as.pml4_phys);
+    serial_println!(
+        "VMM active: PML4={:#x} (self-check={:?})",
+        kernel_as.pml4_phys,
+        k_phys.is_some()
+    );
+    fb_println!("VMM active: PML4={:#x}", kernel_as.pml4_phys);
+
+    sched::init();
+    let init_tid = sched::spawn("init", Personality::Native, 128);
+    let posix_tid = sched::spawn("posix-sh", Personality::Posix, 100);
+    serial_println!(
+        "Scheduler ready: {} tasks (init={:?}, posix={:?})",
+        sched::task_count(),
+        init_tid,
+        posix_tid
+    );
+    fb_println!("Scheduler ready: {} tasks", sched::task_count());
+
+    let (ep_a, ep_b) = ipc::create_channel();
+    let _ = ipc::send(
+        ep_a,
+        ipc::Message::new(init_tid.as_u64(), 1, alloc::vec![0x4E, 0x58], alloc::vec![]),
+    );
+    let ipc_ok = ipc::recv(ep_b).is_some();
+    let qid = ipc::create_queue();
+    let _ = ipc::post(
+        qid,
+        ipc::CompletionEvent {
+            user_data: 42,
+            status: 0,
+            bytes: 2,
+        },
+    );
+    let cq_ok = ipc::poll(qid).is_some();
+    serial_println!(
+        "IPC & Async CQ ready: channel_ok={}, cq_ok={}",
+        ipc_ok,
+        cq_ok
+    );
+    fb_println!("IPC & Async CQ ready.");
+
+    apic::init_pic_pit_keyboard();
+    apic::init_pit(100);
+    serial_println!("PIC/PIT (100 Hz) and PS/2 keyboard IRQ initialized.");
 
     // Unified syscall router self-test across personalities
     let msg = b"hello from Native DebugLog";
