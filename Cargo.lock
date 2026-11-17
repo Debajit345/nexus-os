@@ -7,8 +7,24 @@ name = "nexus-abi"
 version = "0.1.0"
 
 [[package]]
+name = "nexus-elf"
+version = "0.1.0"
+
+[[package]]
+name = "nexus-gfx"
+version = "0.1.0"
+
+[[package]]
 name = "nexus-kernel"
 version = "0.1.0"
 dependencies = [
  "nexus-abi",
 ]
+
+[[package]]
+name = "nexus-macho"
+version = "0.1.0"
+
+[[package]]
+name = "nexus-pe"
+version = "0.1.0"

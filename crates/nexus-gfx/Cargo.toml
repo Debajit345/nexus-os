@@ -1,0 +1,12 @@
+[package]
+name = "nexus-gfx"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Clean-room 2D compositor, macOS-inspired desktop chrome, and GPU/DRM command submission traits for Nexus OS"
+
+[features]
+default = []
+std = []
+alloc = []
