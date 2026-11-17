@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/nexus-abi",
+    "kernel",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["Nexus OS Contributors"]
+repository = "https://github.com/Debajit345/nexus-os"

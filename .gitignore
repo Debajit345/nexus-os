@@ -1,0 +1,22 @@
+# Rust build artifacts
+target/
+**/*.rs.bk
+
+# Disk images and bootable ISOs
+*.iso
+*.img
+*.qcow2
+*.vmdk
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Logs and temporary files
+*.log
+.env

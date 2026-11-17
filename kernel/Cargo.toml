@@ -1,0 +1,10 @@
+[package]
+name = "nexus-kernel"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Nexus OS x86_64 capability microkernel"
+
+[dependencies]
+nexus-abi = { path = "../crates/nexus-abi" }

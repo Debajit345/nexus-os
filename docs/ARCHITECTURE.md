@@ -1,0 +1,115 @@
+# Nexus OS Architecture
+
+Nexus OS is a clean-room, `x86_64` hybrid operating system written in Rust. Its
+design synthesizes proven architectural primitives from three OS families into a
+single, memory-safe kernel and userspace platform, paired with a GPU/Vulkan-first
+graphics roadmap.
+
+---
+
+## 1. Design Pillars
+
+| Pillar | Inspiration | Role in Nexus OS |
+| :--- | :--- | :--- |
+| **Unified Object & Async I/O** | Windows NT | Kernel object namespace, per-process handle tables with access rights, IRP-style async I/O packets, and I/O Completion Ports (IOCP). |
+| **Capability IPC & UX** | macOS / Mach | Port-based message passing, send/receive rights, out-of-line memory descriptors, and a low-latency compositor-driven desktop UX. |
+| **POSIX & VFS** | Linux | Hierarchical Virtual File System (VFS), mount namespaces, file descriptors mapped onto kernel handles, and POSIX process/signal semantics. |
+| **GPU / Vulkan-First** | Modern Graphics | Direct-to-GPU memory management, explicit synchronization primitives, zero-copy surface sharing, and a Vulkan-first compositor. |
+
+---
+
+## 2. High-Level System Layers
+
+```text
++-----------------------------------------------------------------------+
+|                         Userspace Personalities                       |
+|   [ POSIX / Linux ABI ]   [ Win32 / NT ABI ]   [ Mach / Native UX ]   |
++-----------------------------------------------------------------------+
+|                     System Services & Compositor                      |
+|   [ VFS Server ]   [ Vulkan Compositor ]   [ Device / Driver Hosts ]  |
++-----------------------------------------------------------------------+
+|                        Nexus Hybrid Kernel (Rust)                     |
+|  +------------------+  +-------------------+  +--------------------+  |
+|  |  Object Manager  |  |   Mach-Style IPC  |  |   Async I/O (IOCP) |  |
+|  +------------------+  +-------------------+  +--------------------+  |
+|  +------------------+  +-------------------+  +--------------------+  |
+|  |  VFS Core / Vnode|  |  Memory & Paging  |  |  Preemptive Sched  |  |
+|  +------------------+  +-------------------+  +--------------------+  |
+|  +-----------------------------------------------------------------+  |
+|  |          x86_64 HAL (APIC, IDT/GDT, Syscall, PCIe, IOMMU)       |  |
+|  +-----------------------------------------------------------------+  |
++-----------------------------------------------------------------------+
+```
+
+---
+
+## 3. Core Kernel Subsystems
+
+### 3.1 Hardware Abstraction & Boot (`x86_64`)
+- **Boot**: UEFI / Limine-compatible `x86_64-unknown-none` entry point with
+  higher-half kernel mapping.
+- **Memory Management**: 4-level (and optional 5-level) paging, physical frame
+  allocator, slab/buddy kernel heap, and copy-on-write virtual memory objects
+  (VMOs).
+- **Interrupts & Syscalls**: APIC/x2APIC timer and IPI routing, `SYSCALL`/`SYSRET`
+  fast path, and per-CPU kernel stacks.
+
+### 3.2 NT-Style Object Manager & Handle Tables
+- Every kernel resource (files, ports, threads, processes, VMOs, completion
+  ports, GPU fences) is a reference-counted **Kernel Object** with a uniform
+  header and type descriptor.
+- Processes interact with objects exclusively through **Handles** stored in a
+  per-process handle table, each carrying an explicit **Access Mask** (read,
+  write, execute, duplicate, transfer).
+- An internal hierarchical object namespace (`/Device`, `/ObjectTypes`,
+  `/Sessions`) coexists cleanly with the POSIX VFS mount tree.
+
+### 3.3 Asynchronous I/O & Completion Ports
+- I/O operations are modeled as **I/O Request Packets (IRPs)** that flow
+  asynchronously through layered drivers without blocking kernel threads.
+- **I/O Completion Ports (IOCP)** allow userspace event loops and thread pools
+  to dequeue completed I/O, timers, and IPC notifications in a single scalable
+  wait call.
+- Synchronous POSIX `read`/`write` calls are implemented as thin wrappers over
+  the async I/O pipeline.
+
+### 3.4 Mach-Style Capability IPC
+- **Ports** are unidirectional, kernel-protected message queues.
+- **Port Rights** (`Send`, `SendOnce`, `Receive`) are capabilities that can be
+  transferred across processes via IPC messages, enabling fine-grained
+  sandboxing and service discovery.
+- Large payloads use **Out-of-Line (OOL)** virtual memory descriptors for
+  zero-copy or copy-on-write transfer between address spaces.
+
+### 3.5 Linux-Style VFS & POSIX Layer
+- A clean-room **VFS** provides `Inode`/`Vnode`, `Dentry` cache, `Superblock`,
+  and mount-point resolution.
+- POSIX file descriptors (`fd`) map directly to kernel handles, allowing
+  seamless interoperability between POSIX `epoll`/`poll` and NT-style IOCP.
+
+---
+
+## 4. GPU / Vulkan-First Roadmap
+
+Rather than treating graphics as a legacy 2D framebuffer with 3D bolted on,
+Nexus OS is architected around modern GPU pipelines:
+
+1. **Phase 1 (Bring-up)**: UEFI GOP / linear framebuffer console, serial
+   logging, and basic software blitting for early kernel debugging.
+2. **Phase 2 (DRM/KMS-style Core & VirtIO-GPU)**: Kernel mode-setting,
+   DMA-BUF-style shared memory objects (VMOs), and explicit sync fences
+   integrated with IOCP.
+3. **Phase 3 (Vulkan-First Compositor)**: A userspace compositor speaking
+   directly to GPU command queues, supporting zero-copy client surfaces,
+   damage tracking, and hardware-accelerated window effects.
+4. **Phase 4 (Native & Compatibility Graphics)**: Clean-room Vulkan ICD
+   interface, Mesa/Gallium-compatible userspace driver hosting, and translation
+   layers for POSIX/Wayland and Win32/DXVK-style workloads.
+
+---
+
+## 5. Host-Testable Workspace Design
+
+To maximize development velocity and reliability, core subsystems live in
+platform-independent `crates/*` packages that compile and run unit tests on the
+host (`cargo test`), while `kernel/` binds them to bare-metal `x86_64` hardware.
