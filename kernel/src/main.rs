@@ -10,6 +10,7 @@ mod blk;
 mod cap;
 mod console;
 mod cpu;
+mod desktop_boot;
 mod drm;
 mod exec;
 mod gdt;
@@ -326,6 +327,12 @@ pub extern "C" fn _start() -> ! {
         pci_count: pci_devs.len() as u32,
     };
     ksh::run_boot_diagnostics(&sys_info);
+    desktop_boot::run_init_selftest();
+    if let Some(fb_resp) = FRAMEBUFFER_REQUEST.response() {
+        if let Some(fb) = fb_resp.framebuffers().first() {
+            desktop_boot::render_desktop_preview(fb);
+        }
+    }
 
     // Unified syscall router self-test across personalities
     let msg = b"hello from Native DebugLog";

@@ -33,6 +33,13 @@ name = "nexus-gfx"
 version = "0.1.0"
 
 [[package]]
+name = "nexus-gpu-bridge"
+version = "0.1.0"
+dependencies = [
+ "nexus-gfx",
+]
+
+[[package]]
 name = "nexus-init"
 version = "0.1.0"
 dependencies = [
@@ -46,6 +53,9 @@ version = "0.1.0"
 dependencies = [
  "nexus-abi",
  "nexus-compat",
+ "nexus-desktop",
+ "nexus-gfx",
+ "nexus-init",
  "nexus-shell",
 ]
 
@@ -56,6 +66,13 @@ version = "0.1.0"
 [[package]]
 name = "nexus-pe"
 version = "0.1.0"
+
+[[package]]
+name = "nexus-pkg"
+version = "0.1.0"
+dependencies = [
+ "nexus-abi",
+]
 
 [[package]]
 name = "nexus-shell"
