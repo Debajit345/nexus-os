@@ -16,8 +16,10 @@ mod iommu;
 mod ipc;
 mod limine;
 mod mm;
+mod net;
 mod nvme;
 mod pci;
+mod power;
 mod sched;
 mod serial;
 mod smp;
@@ -266,17 +268,24 @@ pub extern "C" fn _start() -> ! {
         }
     }
     let gpus = drm::probe_gpus(&pci_devs);
+    let mut net_stack = net::NetStack::new();
+    let nic_count = net_stack.probe_nics(&pci_devs);
+    let power_info = power::init(cpu_info.vendor);
     serial_println!(
-        "Drivers probed: nvme={}, xhci={}, drm_gpus={}",
+        "Drivers probed: nvme={}, xhci={}, drm_gpus={}, nics={}, hwp={}, cppc={}",
         nvme_count,
         xhci_count,
-        gpus.len()
+        gpus.len(),
+        nic_count,
+        power_info.hwp_supported,
+        power_info.amd_cppc
     );
     fb_println!(
-        "Drivers: {} NVMe, {} xHCI, {} GPU(s)",
+        "Drivers: {} NVMe, {} xHCI, {} GPU, {} NIC",
         nvme_count,
         xhci_count,
-        gpus.len()
+        gpus.len(),
+        nic_count
     );
 
     // SMP multi-core bootstrap

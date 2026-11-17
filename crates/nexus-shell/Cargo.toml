@@ -1,0 +1,11 @@
+[package]
+name = "nexus-shell"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Clean-room POSIX shell and coreutils for Nexus OS"
+
+[features]
+default = []
+std = []
