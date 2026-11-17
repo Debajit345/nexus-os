@@ -58,9 +58,17 @@ dependencies = [
  "nexus-abi",
  "nexus-compat",
  "nexus-desktop",
+ "nexus-fs",
  "nexus-gfx",
  "nexus-init",
  "nexus-shell",
+]
+
+[[package]]
+name = "nexus-libc"
+version = "0.1.0"
+dependencies = [
+ "nexus-abi",
 ]
 
 [[package]]

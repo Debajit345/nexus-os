@@ -13,6 +13,7 @@ mod cpu;
 mod desktop_boot;
 mod drm;
 mod exec;
+mod fs_mount;
 mod gdt;
 mod idt;
 mod iommu;
@@ -24,6 +25,7 @@ mod net;
 mod nvme;
 mod pci;
 mod power;
+mod ring3_test;
 mod sched;
 mod serial;
 mod smp;
@@ -327,6 +329,8 @@ pub extern "C" fn _start() -> ! {
         pci_count: pci_devs.len() as u32,
     };
     ksh::run_boot_diagnostics(&sys_info);
+    fs_mount::run_fs_selftest();
+    ring3_test::run_ring3_exec_selftest();
     desktop_boot::run_init_selftest();
     if let Some(fb_resp) = FRAMEBUFFER_REQUEST.response() {
         if let Some(fb) = fb_resp.framebuffers().first() {
