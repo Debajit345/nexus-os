@@ -1586,7 +1586,7 @@ pub fn self_test() -> Result<(), &'static str> {
         32 * 1024 * 1024,
     ));
     let crtc_id = dev.add_crtc(0);
-    let enc_id = dev.add_encoder(EncoderType::DisplayPort, 0x1);
+    let enc_id = dev.add_encoder(EncoderType::DpMst, 0x1);
     let conn_id = dev.add_connector(ConnectorType::DisplayPort, vec![enc_id]);
     let _plane_id = dev.add_plane(PlaneType::Primary, 0x1, 0);
     dev.attach_edid(conn_id, &*edid).map_err(|e| e.as_str())?;
