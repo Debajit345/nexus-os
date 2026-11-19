@@ -82,15 +82,17 @@ impl From<OolIpcError> for AbiError {
         match err {
             OolIpcError::InvalidDescriptor
             | OolIpcError::UnalignedAddress
-            | Self::SizeMismatch
-            | Self::InvalidRingSize
-            | Self::MessageTooLarge => AbiError::InvalidArg,
+            | OolIpcError::SizeMismatch
+            | OolIpcError::InvalidRingSize
+            | OolIpcError::MessageTooLarge => AbiError::InvalidArg,
             OolIpcError::InvalidPort
             | OolIpcError::InvalidRight
-            | Self::InvalidSection
-            | Self::InvalidView => AbiError::InvalidHandle,
-            OolIpcError::PortDead | Self::InvalidState => AbiError::BadState,
-            OolIpcError::QueueFull | Self::QueueEmpty | Self::WouldBlock => AbiError::WouldBlock,
+            | OolIpcError::InvalidSection
+            | OolIpcError::InvalidView => AbiError::InvalidHandle,
+            OolIpcError::PortDead | OolIpcError::InvalidState => AbiError::BadState,
+            OolIpcError::QueueFull | OolIpcError::QueueEmpty | OolIpcError::WouldBlock => {
+                AbiError::WouldBlock
+            }
             OolIpcError::AccessDenied => AbiError::AccessDenied,
             OolIpcError::OutOfMemory => AbiError::NoMemory,
             OolIpcError::AlreadyMapped => AbiError::AlreadyExists,
