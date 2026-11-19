@@ -1056,7 +1056,7 @@ impl Aes128 {
         for (dst, src) in s.iter_mut().zip(self.rk[0].iter()) {
             *dst ^= *src;
         }
-        for r in 1..=10 {
+        for (r, rk) in self.rk.iter().enumerate().skip(1) {
             // SubBytes
             for b in &mut s {
                 *b = AES_SBOX[*b as usize];
@@ -1090,7 +1090,7 @@ impl Aes128 {
                 }
             }
             // AddRoundKey
-            for (dst, src) in s.iter_mut().zip(self.rk[r].iter()) {
+            for (dst, src) in s.iter_mut().zip(rk.iter()) {
                 *dst ^= *src;
             }
         }
