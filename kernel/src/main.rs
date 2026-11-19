@@ -16,12 +16,14 @@ mod cpu;
 mod desktop_boot;
 mod drm;
 mod dynlink;
+mod eevdf;
 mod exec;
 mod fs_mount;
 mod gdt;
 mod hardening;
 mod idt;
 mod iommu;
+mod iommu_vtd;
 mod ipc;
 mod kms;
 mod ksh;
@@ -43,10 +45,12 @@ mod smp;
 mod sync;
 mod syscall;
 mod time;
+mod usb_class;
 mod usermode;
 mod vfs;
 mod vmm;
 mod xhci;
+mod zswap;
 
 use core::arch::asm;
 use core::panic::PanicInfo;
@@ -374,6 +378,17 @@ pub extern "C" fn _start() -> ! {
         cow_fs_ok,
         kms_ok,
         net_v6_ok
+    );
+    let eevdf_ok = eevdf::self_test();
+    let zswap_ok = zswap::self_test();
+    let iommu_vtd_ok = iommu_vtd::self_test();
+    let usb_class_ok = usb_class::self_test();
+    serial_println!(
+        "Production kernel self-tests (Stages 33-36): eevdf={:?} zswap={:?} iommu_vtd={:?} usb_class={:?}",
+        eevdf_ok,
+        zswap_ok,
+        iommu_vtd_ok,
+        usb_class_ok
     );
     fs_mount::run_fs_selftest();
     ring3_test::run_ring3_exec_selftest();
