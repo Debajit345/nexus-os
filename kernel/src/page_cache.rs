@@ -1063,24 +1063,24 @@ pub fn self_test() -> Result<(), &'static str> {
 
     // 1. PageCache LRU + dirty writeback test (capacity = 2 pages)
     let mut cache = PageCache::new(2).map_err(|_| "PageCache::new failed")?;
-    let p0 = [0xA0u8; PAGE_SIZE];
-    let p1 = [0xB1u8; PAGE_SIZE];
-    let p2 = [0xC2u8; PAGE_SIZE];
+    let p0 = alloc::vec![0xA0u8; PAGE_SIZE];
+    let p1 = alloc::vec![0xB1u8; PAGE_SIZE];
+    let p2 = alloc::vec![0xC2u8; PAGE_SIZE];
 
     cache
-        .write_page(0, 0, &dev, &p0)
+        .write_page(0, 0, &dev, p0.as_slice().try_into().unwrap())
         .map_err(|_| "write_page 0 failed")?;
     cache
-        .write_page(0, 1, &dev, &p1)
+        .write_page(0, 1, &dev, p1.as_slice().try_into().unwrap())
         .map_err(|_| "write_page 1 failed")?;
     // Writing page 2 must evict LRU page 0 and write it back to `dev`.
     cache
-        .write_page(0, 2, &dev, &p2)
+        .write_page(0, 2, &dev, p2.as_slice().try_into().unwrap())
         .map_err(|_| "write_page 2 failed")?;
 
-    let mut verify_buf = [0u8; PAGE_SIZE];
+    let mut verify_buf = alloc::vec![0u8; PAGE_SIZE];
     cache
-        .read_page(0, 0, &dev, &mut verify_buf)
+        .read_page(0, 0, &dev, verify_buf.as_mut_slice().try_into().unwrap())
         .map_err(|_| "read_page 0 failed")?;
     if verify_buf != p0 {
         return Err("PageCache dirty writeback mismatch on page 0");
