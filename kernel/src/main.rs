@@ -11,9 +11,11 @@ mod blk;
 mod blk_mq;
 mod cap;
 mod console;
+mod cow_fs;
 mod cpu;
 mod desktop_boot;
 mod drm;
+mod dynlink;
 mod exec;
 mod fs_mount;
 mod gdt;
@@ -21,10 +23,12 @@ mod hardening;
 mod idt;
 mod iommu;
 mod ipc;
+mod kms;
 mod ksh;
 mod limine;
 mod mm;
 mod net;
+mod net_v6;
 mod nvme;
 mod page_cache;
 mod pci;
@@ -359,6 +363,17 @@ pub extern "C" fn _start() -> ! {
         aml_ok,
         blk_mq_ok,
         rcu_ok
+    );
+    let dynlink_ok = dynlink::self_test();
+    let cow_fs_ok = cow_fs::self_test();
+    let kms_ok = kms::self_test();
+    let net_v6_ok = net_v6::self_test();
+    serial_println!(
+        "Production kernel self-tests (Stages 29-32): dynlink={:?} cow_fs={:?} kms={:?} net_v6={:?}",
+        dynlink_ok,
+        cow_fs_ok,
+        kms_ok,
+        net_v6_ok
     );
     fs_mount::run_fs_selftest();
     ring3_test::run_ring3_exec_selftest();
