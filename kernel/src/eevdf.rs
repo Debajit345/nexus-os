@@ -912,8 +912,8 @@ impl SmpScheduler {
 
     /// Initialize the SMP scheduler with CPU 0 online.
     pub fn init(&self, bsp_core_type: CoreType) {
-        for cpu_id in 0..MAX_CPUS {
-            let mut rq = self.runqueues[cpu_id].lock();
+        for (cpu_id, rq_lock) in self.runqueues.iter().enumerate() {
+            let mut rq = rq_lock.lock();
             rq.cpu_id = cpu_id;
             rq.online = cpu_id == 0;
             rq.core_type = if cpu_id == 0 {
@@ -984,8 +984,8 @@ impl SmpScheduler {
         let n = self.num_cpus.load(Ordering::Acquire).min(MAX_CPUS);
         let mut has_p = false;
         let mut has_e = false;
-        for cpu_id in 0..n {
-            let rq = self.runqueues[cpu_id].lock();
+        for rq_lock in self.runqueues.iter().take(n) {
+            let rq = rq_lock.lock();
             if rq.online {
                 match rq.core_type {
                     CoreType::Performance => has_p = true,
@@ -1003,8 +1003,8 @@ impl SmpScheduler {
         let mut best_cpu: Option<usize> = None;
         let mut best_score: i64 = i64::MIN;
 
-        for cpu_id in 0..n {
-            let rq = self.runqueues[cpu_id].lock();
+        for (cpu_id, rq_lock) in self.runqueues.iter().enumerate().take(n) {
+            let rq = rq_lock.lock();
             if !rq.online {
                 continue;
             }
@@ -1149,8 +1149,8 @@ impl SmpScheduler {
         let n = self.num_cpus.load(Ordering::Acquire).min(MAX_CPUS);
         let mut found: Option<SchedTask> = None;
 
-        for cpu_id in 0..n {
-            let mut rq = self.runqueues[cpu_id].lock();
+        for rq_lock in self.runqueues.iter().take(n) {
+            let mut rq = rq_lock.lock();
             if let Some(pos) = rq
                 .queue
                 .iter()
@@ -1211,11 +1211,11 @@ impl SmpScheduler {
         // Find busiest source CPU with at least 1 queued Ready task.
         let mut busiest_cpu: Option<usize> = None;
         let mut busiest_nr: usize = 0;
-        for cpu_id in 0..n {
+        for (cpu_id, rq_lock) in self.runqueues.iter().enumerate().take(n) {
             if cpu_id == thief_cpu {
                 continue;
             }
-            let rq = self.runqueues[cpu_id].lock();
+            let rq = rq_lock.lock();
             if !rq.online {
                 continue;
             }

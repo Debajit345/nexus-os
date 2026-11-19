@@ -277,11 +277,9 @@ pub fn lz_decompress(src: &[u8], dst: &mut [u8]) -> Result<usize, ZswapError> {
         }
 
         // Byte-by-byte copy handles overlapping RLE matches (offset < match_len).
-        let mut copy_src = out_pos - offset;
-        for _ in 0..match_len {
+        for copy_src in (out_pos - offset..).take(match_len) {
             dst[out_pos] = dst[copy_src];
             out_pos += 1;
-            copy_src += 1;
         }
     }
 
