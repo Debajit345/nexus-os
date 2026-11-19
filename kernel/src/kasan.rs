@@ -224,22 +224,28 @@ impl KasanTracker {
         let first_granule = start_off >> SHADOW_SHIFT;
         let last_granule = (end_off - 1) >> SHADOW_SHIFT;
 
-        for g in first_granule..=last_granule {
+        for (g, slot) in self
+            .shadow
+            .iter_mut()
+            .enumerate()
+            .take(last_granule + 1)
+            .skip(first_granule)
+        {
             let g_start = g << SHADOW_SHIFT;
             let g_end = g_start + SHADOW_SCALE;
             if start_off <= g_start && end_off >= g_end {
-                self.shadow[g] = tag;
+                *slot = tag;
             } else if start_off > g_start && end_off >= g_end {
                 // Prefix of granule remains accessible if it was previously accessible.
                 let prefix = (start_off - g_start) as u8;
-                let cur = self.shadow[g];
+                let cur = *slot;
                 if cur == SHADOW_ACCESSIBLE || (cur < 8 && cur > prefix) {
-                    self.shadow[g] = prefix;
+                    *slot = prefix;
                 } else if cur >= 0x80 {
-                    self.shadow[g] = tag;
+                    *slot = tag;
                 }
             } else {
-                self.shadow[g] = tag;
+                *slot = tag;
             }
         }
         Ok(())
