@@ -25,6 +25,7 @@ mod idt;
 mod iommu;
 mod iommu_vtd;
 mod ipc;
+mod kasan;
 mod kms;
 mod ksh;
 mod limine;
@@ -32,6 +33,7 @@ mod mm;
 mod net;
 mod net_v6;
 mod nvme;
+mod ool_ipc;
 mod page_cache;
 mod pci;
 mod power;
@@ -42,6 +44,7 @@ mod sched;
 mod serial;
 mod slab;
 mod smp;
+mod sof_dsp;
 mod sync;
 mod syscall;
 mod time;
@@ -49,6 +52,7 @@ mod usb_class;
 mod usermode;
 mod vfs;
 mod vmm;
+mod wireless;
 mod xhci;
 mod zswap;
 
@@ -389,6 +393,17 @@ pub extern "C" fn _start() -> ! {
         zswap_ok,
         iommu_vtd_ok,
         usb_class_ok
+    );
+    let ool_ipc_ok = ool_ipc::self_test();
+    let kasan_ok = kasan::self_test();
+    let wireless_ok = wireless::self_test();
+    let sof_dsp_ok = sof_dsp::self_test();
+    serial_println!(
+        "Production kernel self-tests (Stages 37-40): ool_ipc={:?} kasan={:?} wireless={:?} sof_dsp={:?}",
+        ool_ipc_ok,
+        kasan_ok,
+        wireless_ok,
+        sof_dsp_ok
     );
     fs_mount::run_fs_selftest();
     ring3_test::run_ring3_exec_selftest();
