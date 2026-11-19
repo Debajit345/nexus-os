@@ -4,9 +4,11 @@
 extern crate alloc;
 
 mod acpi;
+mod aml;
 mod apic;
 mod audio;
 mod blk;
+mod blk_mq;
 mod cap;
 mod console;
 mod cpu;
@@ -28,9 +30,11 @@ mod page_cache;
 mod pci;
 mod power;
 mod proc;
+mod rcu;
 mod ring3_test;
 mod sched;
 mod serial;
+mod slab;
 mod smp;
 mod sync;
 mod syscall;
@@ -344,6 +348,17 @@ pub extern "C" fn _start() -> ! {
         proc_ok,
         sync_ok,
         page_cache_ok
+    );
+    let slab_ok = slab::self_test();
+    let aml_ok = aml::self_test();
+    let blk_mq_ok = blk_mq::self_test();
+    let rcu_ok = rcu::self_test();
+    serial_println!(
+        "Production kernel self-tests (Stages 25-28): slab={:?} aml={:?} blk_mq={:?} rcu={:?}",
+        slab_ok,
+        aml_ok,
+        blk_mq_ok,
+        rcu_ok
     );
     fs_mount::run_fs_selftest();
     ring3_test::run_ring3_exec_selftest();
