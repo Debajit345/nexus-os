@@ -15,6 +15,7 @@ mod drm;
 mod exec;
 mod fs_mount;
 mod gdt;
+mod hardening;
 mod idt;
 mod iommu;
 mod ipc;
@@ -23,12 +24,15 @@ mod limine;
 mod mm;
 mod net;
 mod nvme;
+mod page_cache;
 mod pci;
 mod power;
+mod proc;
 mod ring3_test;
 mod sched;
 mod serial;
 mod smp;
+mod sync;
 mod syscall;
 mod time;
 mod usermode;
@@ -329,6 +333,18 @@ pub extern "C" fn _start() -> ! {
         pci_count: pci_devs.len() as u32,
     };
     ksh::run_boot_diagnostics(&sys_info);
+    hardening::init();
+    let hardening_ok = hardening::self_test();
+    let proc_ok = proc::self_test();
+    let sync_ok = sync::self_test();
+    let page_cache_ok = page_cache::self_test();
+    serial_println!(
+        "Production kernel self-tests: hardening={:?} proc={:?} sync={} page_cache={:?}",
+        hardening_ok,
+        proc_ok,
+        sync_ok,
+        page_cache_ok
+    );
     fs_mount::run_fs_selftest();
     ring3_test::run_ring3_exec_selftest();
     desktop_boot::run_init_selftest();
