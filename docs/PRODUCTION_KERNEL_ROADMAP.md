@@ -39,3 +39,9 @@ This document catalogs the complete engineering roadmap required to bring the **
 - [x] **Stage 44 (`kernel/src/cgroups.rs`)**: Linux-compatible namespaces (`pid`/`mnt`/`net`/`uts`/`ipc`/`user`) & Cgroups v2 resource controller.
 - [x] **Stage 45 (`kernel/src/perf.rs`)**: Kernel tracing, PMU performance counters & verified eBPF probe engine.
 - [x] **Stage 46 (`kernel/src/tpm.rs`)**: TPM 2.0 measured boot, PCR extend/quote & kernel keyring / Ed25519 signature verifier.
+- [x] **Stage 47 (`kernel/src/io_uring.rs`)**: Asynchronous `io_uring` SQ/CQ ring engine & registered buffer/FD table.
+- [x] **Stage 48 (`kernel/src/virtio_net.rs`)**: VirtIO-Net multi-queue NIC driver, TSO/GSO & checksum offload engine.
+- [x] **Stage 49 (`kernel/src/ext4.rs`)**: Clean-room `ext4` extent-tree & JBD2 journal parser/writer.
+- [x] **Stage 50 (`kernel/src/ntfs.rs`)**: Clean-room `NTFS` MFT record, data-run & `$FILE_NAME` parser.
+- [x] **Stage 51 (`kernel/src/apfs.rs`)**: Clean-room `APFS` container/volume superblock & B-tree object map parser.
+- [x] **Stage 52 (`kernel/src/vmx.rs`)**: Hardware virtualization (Intel VT-x VMX / AMD-V SVM) hypervisor & EPT/NPT nested paging engine.

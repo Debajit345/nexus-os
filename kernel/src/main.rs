@@ -6,6 +6,7 @@ extern crate alloc;
 mod acpi;
 mod ahci;
 mod aml;
+mod apfs;
 mod apic;
 mod audio;
 mod blk;
@@ -20,10 +21,12 @@ mod drm;
 mod dynlink;
 mod eevdf;
 mod exec;
+mod ext4;
 mod fs_mount;
 mod gdt;
 mod hardening;
 mod idt;
+mod io_uring;
 mod iommu;
 mod iommu_vtd;
 mod ipc;
@@ -35,6 +38,7 @@ mod mm;
 mod net;
 mod net_v6;
 mod netfilter;
+mod ntfs;
 mod nvme;
 mod ool_ipc;
 mod page_cache;
@@ -57,7 +61,9 @@ mod usb_class;
 mod usermode;
 mod vfs;
 mod virtio_gpu;
+mod virtio_net;
 mod vmm;
+mod vmx;
 mod wireless;
 mod xhci;
 mod zswap;
@@ -425,6 +431,21 @@ pub extern "C" fn _start() -> ! {
         cgroups_ok,
         perf_ok,
         tpm_ok
+    );
+    let io_uring_ok = io_uring::self_test();
+    let virtio_net_ok = virtio_net::self_test();
+    let ext4_ok = ext4::self_test();
+    let ntfs_ok = ntfs::self_test();
+    let apfs_ok = apfs::self_test();
+    let vmx_ok = vmx::self_test();
+    serial_println!(
+        "Production kernel self-tests (Stages 47-52): io_uring={:?} virtio_net={:?} ext4={:?} ntfs={:?} apfs={:?} vmx={:?}",
+        io_uring_ok,
+        virtio_net_ok,
+        ext4_ok,
+        ntfs_ok,
+        apfs_ok,
+        vmx_ok
     );
     fs_mount::run_fs_selftest();
     ring3_test::run_ring3_exec_selftest();
