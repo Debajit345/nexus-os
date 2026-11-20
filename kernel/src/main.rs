@@ -4,12 +4,14 @@
 extern crate alloc;
 
 mod acpi;
+mod ahci;
 mod aml;
 mod apic;
 mod audio;
 mod blk;
 mod blk_mq;
 mod cap;
+mod cgroups;
 mod console;
 mod cow_fs;
 mod cpu;
@@ -32,10 +34,12 @@ mod limine;
 mod mm;
 mod net;
 mod net_v6;
+mod netfilter;
 mod nvme;
 mod ool_ipc;
 mod page_cache;
 mod pci;
+mod perf;
 mod power;
 mod proc;
 mod rcu;
@@ -48,9 +52,11 @@ mod sof_dsp;
 mod sync;
 mod syscall;
 mod time;
+mod tpm;
 mod usb_class;
 mod usermode;
 mod vfs;
+mod virtio_gpu;
 mod vmm;
 mod wireless;
 mod xhci;
@@ -404,6 +410,21 @@ pub extern "C" fn _start() -> ! {
         kasan_ok,
         wireless_ok,
         sof_dsp_ok
+    );
+    let virtio_gpu_ok = virtio_gpu::self_test();
+    let ahci_ok = ahci::self_test();
+    let netfilter_ok = netfilter::self_test();
+    let cgroups_ok = cgroups::self_test();
+    let perf_ok = perf::self_test();
+    let tpm_ok = tpm::self_test();
+    serial_println!(
+        "Production kernel self-tests (Stages 41-46): virtio_gpu={:?} ahci={:?} netfilter={:?} cgroups={:?} perf={:?} tpm={:?}",
+        virtio_gpu_ok,
+        ahci_ok,
+        netfilter_ok,
+        cgroups_ok,
+        perf_ok,
+        tpm_ok
     );
     fs_mount::run_fs_selftest();
     ring3_test::run_ring3_exec_selftest();

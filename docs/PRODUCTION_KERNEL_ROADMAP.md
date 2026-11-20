@@ -33,3 +33,9 @@ This document catalogs the complete engineering roadmap required to bring the **
 - [x] **Stage 36 (`kernel/src/usb_class.rs`)**: USB4/xHCI isochronous TRB ring, USB HID report parser, UAC2 audio descriptors, and BOT/UASP SCSI command builder.
 - [x] **Stage 39 (`kernel/src/wireless.rs`)**: 802.11ax/be Wi-Fi MAC, WPA3-SAE/CCMP key hierarchy, and Bluetooth HCI/L2CAP stack.
 - [x] **Stage 40 (`kernel/src/sof_dsp.rs`)**: Intel HDA / SOF IPC4 DSP topology/pipeline builder and CORB/RIRB + BDL audio DMA engine.
+- [x] **Stage 41 (`kernel/src/virtio_gpu.rs`)**: VirtIO-GPU 2D/3D Virgl & Venus/Vulkan command submission engine.
+- [x] **Stage 42 (`kernel/src/ahci.rs`)**: AHCI / SATA 3.0 HBA driver & 32-slot NCQ command engine.
+- [x] **Stage 43 (`kernel/src/netfilter.rs`)**: Stateful packet filter, 5-tuple NAT/conntrack & eBPF-style XDP hook engine.
+- [x] **Stage 44 (`kernel/src/cgroups.rs`)**: Linux-compatible namespaces (`pid`/`mnt`/`net`/`uts`/`ipc`/`user`) & Cgroups v2 resource controller.
+- [x] **Stage 45 (`kernel/src/perf.rs`)**: Kernel tracing, PMU performance counters & verified eBPF probe engine.
+- [x] **Stage 46 (`kernel/src/tpm.rs`)**: TPM 2.0 measured boot, PCR extend/quote & kernel keyring / Ed25519 signature verifier.
