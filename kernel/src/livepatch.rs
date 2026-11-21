@@ -18,7 +18,6 @@ use alloc::boxed::Box;
 use alloc::string::String;
 use alloc::vec;
 use alloc::vec::Vec;
-use core::mem::size_of;
 use core::sync::atomic::{fence, Ordering};
 
 use crate::rcu;
@@ -1206,6 +1205,7 @@ fn push_i64(buf: &mut Vec<u8>, v: i64) {
     buf.extend_from_slice(&v.to_le_bytes());
 }
 
+#[allow(clippy::too_many_arguments)]
 fn push_shdr(
     buf: &mut Vec<u8>,
     sh_name: u32,

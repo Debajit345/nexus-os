@@ -284,6 +284,7 @@ impl SglDescriptor {
         self.type_id & 0x0F
     }
 
+    #[allow(clippy::wrong_self_convention)]
     pub fn to_bytes(&self, out: &mut [u8]) -> Result<(), NvmeOfError> {
         if out.len() < 16 {
             return Err(NvmeOfError::BufferTooSmall);
@@ -465,6 +466,7 @@ impl NvmeOfSqe {
         }
     }
 
+    #[allow(clippy::wrong_self_convention)]
     pub fn to_bytes(&self, out: &mut [u8]) -> Result<(), NvmeOfError> {
         if out.len() < 64 {
             return Err(NvmeOfError::BufferTooSmall);
@@ -561,6 +563,7 @@ impl NvmeOfCqe {
         (self.status >> 1) == 0
     }
 
+    #[allow(clippy::wrong_self_convention)]
     pub fn to_bytes(&self, out: &mut [u8]) -> Result<(), NvmeOfError> {
         if out.len() < 16 {
             return Err(NvmeOfError::BufferTooSmall);
@@ -664,6 +667,7 @@ pub struct PduCommonHeader {
 const _: () = assert!(size_of::<PduCommonHeader>() == 8);
 
 impl PduCommonHeader {
+    #[allow(clippy::wrong_self_convention)]
     pub fn to_bytes(&self, out: &mut [u8]) -> Result<(), NvmeOfError> {
         if out.len() < 8 {
             return Err(NvmeOfError::BufferTooSmall);

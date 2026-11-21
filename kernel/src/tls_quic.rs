@@ -1365,10 +1365,7 @@ impl KtlsSession {
             return Err(TlsQuicError::InvalidRecord);
         }
         let payload_len = hdr.length as usize;
-        if payload_len < 17
-            || payload_len > TLS_MAX_CIPHERTEXT_LEN
-            || record.len() < 5 + payload_len
-        {
+        if !(17..=TLS_MAX_CIPHERTEXT_LEN).contains(&payload_len) || record.len() < 5 + payload_len {
             return Err(TlsQuicError::InvalidRecord);
         }
         if self.rx.seq == u64::MAX {

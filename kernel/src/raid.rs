@@ -1382,10 +1382,10 @@ impl VolumeGroup {
             }
         }
         let mut legs = Vec::with_capacity(stripe_count);
-        for pv_idx in 0..stripe_count {
+        for (pv_idx, pv) in self.pvs.iter_mut().enumerate().take(stripe_count) {
             let mut leg = Vec::with_capacity(extents_per_leg as usize);
             for _ in 0..extents_per_leg {
-                let pe_idx = self.pvs[pv_idx].alloc_extent().ok_or(RaidError::NoSpace)?;
+                let pe_idx = pv.alloc_extent().ok_or(RaidError::NoSpace)?;
                 leg.push(PhysicalExtent { pv_idx, pe_idx });
             }
             legs.push(leg);
