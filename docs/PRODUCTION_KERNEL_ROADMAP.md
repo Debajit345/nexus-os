@@ -45,3 +45,9 @@ This document catalogs the complete engineering roadmap required to bring the **
 - [x] **Stage 50 (`kernel/src/ntfs.rs`)**: Clean-room `NTFS` MFT record, data-run & `$FILE_NAME` parser.
 - [x] **Stage 51 (`kernel/src/apfs.rs`)**: Clean-room `APFS` container/volume superblock & B-tree object map parser.
 - [x] **Stage 52 (`kernel/src/vmx.rs`)**: Hardware virtualization (Intel VT-x VMX / AMD-V SVM) hypervisor & EPT/NPT nested paging engine.
+- [x] **Stage 53 (`kernel/src/tls_quic.rs`)**: Kernel TLS 1.3 (kTLS) & QUIC transport offload engine.
+- [x] **Stage 54 (`kernel/src/nvme_of.rs`)**: NVMe-oF (NVMe over Fabrics / TCP) & RDMA queue-pair engine.
+- [x] **Stage 55 (`kernel/src/raid.rs`)**: Software RAID (0/1/5/6/10) & LVM/Device-Mapper thin-provisioning/snapshot engine.
+- [x] **Stage 56 (`kernel/src/livepatch.rs`)**: Kernel live-patching (`kpatch`), ELF64 `.ko` relocator & `kallsyms` symbol resolver.
+- [x] **Stage 57 (`kernel/src/kdump.rs`)**: Kernel crash dump (`kdump` ELF64 `vmcore`), persistent `pstore` panic log & NMI watchdog.
+- [x] **Stage 58 (`kernel/src/compositor.rs`)**: Kernel-assisted zero-copy Wayland/Aqua compositor, DMA-BUF registry & damage tracking.

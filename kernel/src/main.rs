@@ -13,6 +13,7 @@ mod blk;
 mod blk_mq;
 mod cap;
 mod cgroups;
+mod compositor;
 mod console;
 mod cow_fs;
 mod cpu;
@@ -31,21 +32,25 @@ mod iommu;
 mod iommu_vtd;
 mod ipc;
 mod kasan;
+mod kdump;
 mod kms;
 mod ksh;
 mod limine;
+mod livepatch;
 mod mm;
 mod net;
 mod net_v6;
 mod netfilter;
 mod ntfs;
 mod nvme;
+mod nvme_of;
 mod ool_ipc;
 mod page_cache;
 mod pci;
 mod perf;
 mod power;
 mod proc;
+mod raid;
 mod rcu;
 mod ring3_test;
 mod sched;
@@ -56,6 +61,7 @@ mod sof_dsp;
 mod sync;
 mod syscall;
 mod time;
+mod tls_quic;
 mod tpm;
 mod usb_class;
 mod usermode;
@@ -446,6 +452,21 @@ pub extern "C" fn _start() -> ! {
         ntfs_ok,
         apfs_ok,
         vmx_ok
+    );
+    let tls_quic_ok = tls_quic::self_test();
+    let nvme_of_ok = nvme_of::self_test();
+    let raid_ok = raid::self_test();
+    let livepatch_ok = livepatch::self_test();
+    let kdump_ok = kdump::self_test();
+    let compositor_ok = compositor::self_test();
+    serial_println!(
+        "Production kernel self-tests (Stages 53-58): tls_quic={:?} nvme_of={:?} raid={:?} livepatch={:?} kdump={:?} compositor={:?}",
+        tls_quic_ok,
+        nvme_of_ok,
+        raid_ok,
+        livepatch_ok,
+        kdump_ok,
+        compositor_ok
     );
     fs_mount::run_fs_selftest();
     ring3_test::run_ring3_exec_selftest();
